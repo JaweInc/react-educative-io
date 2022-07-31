@@ -1,44 +1,27 @@
 import React from 'react';
 import './App.css';
-import {firstName, lastName, middleName, otherName} from './myFile'
-const doFilter = query => user => query === user.name
+
+const API = 'https://hn.algolia.com/api/v1/search?query=';
+const DEFAULT_QUERY = 'redux';
+
 export default class App extends React.Component {
+
   constructor(props) {
     super(props);
-
     this.state = {
-      query: '',
+      title: 'hello',
     }
-    this.onChange = this.onChange.bind(this)
   }
-  onChange(event) {
-    this.setState({ query: event.target.value })
-  }
- 
-  render() {
-    const users = [
-      {name: 'AbdurRahmaan'},
-      {name: 'Tobiloba'},
-    ];
 
+  compomentDidMount() {
+    fetch(API + DEFAULT_QUERY)
+    .then(response => response.json())
+    .then(data => this.setState({ title: data.hits[0].title }))
+  }
+
+  render() {
     return (
-      <div>
-        <ul>
-          {
-            users
-              .filter(doFilter)
-              .map(myUser => <li>{myUser.name}</li>)
-          }
-        </ul>
-        <ol>
-          <li>{firstName}</li>
-          <li>{lastName}</li>
-          <li>{middleName}</li>
-          <li>{otherName}</li>
-          {/* <li>{firstName}</li> */}
-        </ol>
-        <input type="text" onChange={this.onChange} />
-      </div>
+      <div>{this.state.title}</div>
     )
   }
 }
