@@ -1,25 +1,55 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useReducer } from 'react';
 import './App.css';
-import axios from 'axios'
-export default class App extends React.Component {
+// import axios from 'axios'
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      title: null,
+
+const App = () => {
+
+  const setIsLoading = (isLoading) => {
+    return isLoading
+  }
+  const storiesReducer = (state, action) => {
+    if (action.type === 'SET_STORIES') {
+      return action.payload;
+    }
+    else {
+      throw new Error();
     }
   }
 
-  compomentDidMount() {
-    axios('https://api.mydomain.com')
-    .then(data => this.setState({ data }))
-  }
+  const [stories, dispatchStories] = useReducer(
+    storiesReducer,
+    []
+  )
 
-  render() {
-    return (
-      <div>{this.state.title}</div>
-    )
+  useEffect(() => {
+    setIsLoading('Loading...')
+
+    getAsyncStories()
+    .then(result => {
+      dispatchStories({
+        type: 'SET_STORIES',
+        payload: result.data.stories
+      });
+
+      setIsLoading('Done')
+    }).catch((e) => console.error(e))
+  }, [])
+
+  const handleRemoveStory = () => {
+    const newStories = stories.filter(story => 
+      items.objectID !== story.objectID
+    );
+
+    dispatchStories({
+      type: 'SET_STORIES',
+      payload: newStories
+    })
   }
+  return (
+    <></>
+  )
 }
 
-
+export default App
