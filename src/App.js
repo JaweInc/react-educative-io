@@ -1,54 +1,43 @@
-import React, { useEffect } from 'react';
 import { useReducer } from 'react';
 import './App.css';
-// import axios from 'axios'
 
+
+const reducer = (state, action) => {
+  switch(action.type) {
+    case "DEPOSIT":
+      return state + action.payload;
+
+    case "WITHDRAWAL":
+      return state - action.payload;
+
+    default:
+      return state
+  }
+}
 
 const App = () => {
 
-  const setIsLoading = (isLoading) => {
-    return isLoading
-  }
-  const storiesReducer = (state, action) => {
-    if (action.type === 'SET_STORIES') {
-      return action.payload;
-    }
-    else {
-      throw new Error();
-    }
-  }
-
-  const [stories, dispatchStories] = useReducer(
-    storiesReducer,
-    []
-  )
-
-  useEffect(() => {
-    setIsLoading('Loading...')
-
-    getAsyncStories()
-    .then(result => {
-      dispatchStories({
-        type: 'SET_STORIES',
-        payload: result.data.stories
-      });
-
-      setIsLoading('Done')
-    }).catch((e) => console.error(e))
-  }, [])
-
-  const handleRemoveStory = () => {
-    const newStories = stories.filter(story => 
-      items.objectID !== story.objectID
-    );
-
-    dispatchStories({
-      type: 'SET_STORIES',
-      payload: newStories
+  const deposit = (amount) => {
+    dispatchAmount({
+      type: "DEPOSIT",
+      payload: amount
     })
   }
+
+  const withdraw = (amount) => {
+    dispatchAmount({
+      type: "WITHDRAWAL",
+      payload: amount
+    })
+  }
+
+  const [amount, dispatchAmount] = useReducer(reducer, 500)
   return (
-    <></>
+    <div className={'text-align'}>
+      <h1>{amount}</h1>
+      <button onClick={() => deposit(100)}>Deposit</button>
+      <button onClick={() => withdraw(100)}>Withdrawal</button>
+    </div>
   )
 }
 
