@@ -1,44 +1,134 @@
-import { useReducer } from 'react';
-import './App.css';
+import React from 'react';
 
+const initialStories = [
+  {
+    title: 'React',
+    url: 'https://reactjs.org/',
+    author: 'Jordan Walke',
+    num_comments: 3,
+    points: 4,
+    objectID: 0,
+  },
+  {
+    title: 'Redux',
+    url: 'https://redux.js.org/',
+    author: 'Dan Abramov, Andrew Clark',
+    num_comments: 2,
+    points: 5,
+    objectID: 1,
+  },
+];
 
-const reducer = (state, action) => {
-  switch(action.type) {
-    case "DEPOSIT":
-      return state + action.payload;
+const useSemiPersistentState = (key, initialState) => {
+  const [value, setValue] = React.useState(
+    localStorage.getItem(key) || initialState
+  );
 
-    case "WITHDRAWAL":
-      return state - action.payload;
+  React.useEffect(() => {
+    localStorage.setItem(key, value);
+  }, [value, key]);
 
-    default:
-      return state
-  }
-}
+  return [value, setValue];
+};
 
 const App = () => {
+  const [searchTerm, setSearchTerm] = useSemiPersistentState(
+    'search',
+    'React'
+  );
 
-  const deposit = (amount) => {
-    dispatchAmount({
-      type: "DEPOSIT",
-      payload: amount
-    })
-  }
+  const [stories, setStories] = React.useState(initialStories);
 
-  const withdraw = (amount) => {
-    dispatchAmount({
-      type: "WITHDRAWAL",
-      payload: amount
-    })
-  }
+  const handleRemoveStory = item => {
+    const newStories = stories.filter(
+      story => item.objectID !== story.objectID
+    );
 
-  const [amount, dispatchAmount] = useReducer(reducer, 500)
+    setStories(newStories);
+  };
+
+  const handleSearch = event => {
+    setSearchTerm(event.target.value);
+  };
+
+  const searchedStories = stories.filter(story =>
+    story.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className={'text-align'}>
-      <h1>{amount}</h1>
-      <button onClick={() => deposit(100)}>Deposit</button>
-      <button onClick={() => withdraw(100)}>Withdrawal</button>
-    </div>
-  )
-}
+    <div>
+      <h1>My Hacker Stories</h1>
 
-export default App
+      <InputWithLabel
+        id="search"
+        value={searchTerm}
+        isFocused
+        onInputChange={handleSearch}
+      >
+        <strong>Search:</strong>
+      </InputWithLabel>
+
+      <hr />
+
+      <List list={searchedStories} onRemoveItem={handleRemoveStory} />
+    </div>
+  );
+};
+
+const InputWithLabel = ({
+  id,
+  value,
+  type = 'text',
+  onInputChange,
+  isFocused,
+  children,
+}) => {
+  const inputRef = React.useRef();
+
+  React.useEffect(() => {
+    if (isFocused) {
+      inputRef.current.focus();
+    }
+  }, [isFocused]);
+
+  return (
+    <>
+      <label htmlFor={id}>{children}</label>
+      &nbsp;
+      <input
+        ref={inputRef}
+        id={id}
+        type={type}
+        value={value}
+        onChange={onInputChange}
+      />
+    </>
+  );
+};
+
+const List = ({ list, onRemoveItem }) =>
+  list.map(item => (
+    <Item
+      key={item.objectID}
+      item={item}
+      onRemoveItem={onRemoveItem}
+    />
+  ));
+
+const Item = ({ item, onRemoveItem }) => (
+  <div>
+    <span>
+      <a href={item.url}>{item.title}</a>
+    </span>
+    <span>{item.author}</span>
+    <span>{item.num_comments}</span>
+    <span>{item.points}</span>
+    <span>
+      <button type="button" onClick={() => onRemoveItem(item)}>
+        Dismiss
+      </button>
+    </span>
+  </div>
+);
+
+export default App;
